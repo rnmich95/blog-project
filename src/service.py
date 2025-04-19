@@ -1,7 +1,6 @@
 from model import Book, Review, Score, Topic
 from repository import BookRepository, ReviewRepository, ScoreRepository, TopicRepository
 
-
 class TopicService:
     def __init__(self, topic_repository: TopicRepository):
         self.topic_repository = topic_repository
