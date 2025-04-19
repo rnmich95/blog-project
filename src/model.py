@@ -1,10 +1,14 @@
 from dataclasses import dataclass
 
-
 @dataclass
 class Topic:
     description: str
 
+    @classmethod
+    def from_json(cls, json):
+        assert json["description"].strip() != "", "No description provided"
+        return cls(
+            description = json["description"] )
 
 @dataclass
 class Book:
@@ -18,6 +22,11 @@ class Review:
     content: str
 
 @dataclass
-class Rate:
+class Score:
     guest: str
+    value: int
+
+@dataclass
+class PersistedScore:
+    _id: int
     value: int
