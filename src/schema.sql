@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS book (
     b_title TEXT UNIQUE NOT NULL,
     b_pub_date TEXT NOT NULL,
     b_topic INTEGER NOT NULL,
-    FOREIGN KEY(b_topic) REFERENCES topic(t_id)
+    FOREIGN KEY(b_topic) REFERENCES topic(t_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS review (
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS review (
     r_guest TEXT NOT NULL,
     r_content TEXT NOT NULL,
     r_book INTEGER NOT NULL,
-    FOREIGN KEY(r_book) REFERENCES book(b_id)
+    FOREIGN KEY(r_book) REFERENCES book(b_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS score (
@@ -26,5 +26,5 @@ CREATE TABLE IF NOT EXISTS score (
     s_value INTEGER NOT NULL,
     s_book INTEGER NOT NULL,
     CHECK (s_value > 0 AND s_value <= 5),
-    FOREIGN KEY(s_book) REFERENCES book(b_id)
+    FOREIGN KEY(s_book) REFERENCES book(b_id) ON DELETE CASCADE
 );
