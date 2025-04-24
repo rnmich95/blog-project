@@ -1,15 +1,15 @@
 from typing import Optional
-from model import Book, PersistedScore, Review, Score, Topic
+from model import Book, PersistedBook, PersistedScore, Review, Score, Theme
 
-class TopicRepository:
+class ThemeRepository:
 
-    def __init__(self, con):
-        self.con = con
+    def __init__(self, conn):
+        self.conn = conn
 
-    def add(self, topic):
-        with self.con:
-            cur = self.con.cursor()
-            query = """INSERT INTO topic (
+    def add(self, theme):
+        with self.conn:
+            cur = self.conn.cursor()
+            query = """INSERT INTO theme (
                         t_id,
                         t_description) VALUES (
                         ?,?)"""
@@ -18,51 +18,53 @@ class TopicRepository:
                 query,
                 (
                     None,
-                    topic.description,
+                    theme.description,
                 )
             )
 
-            return cur.lastrowid
+            created_id = cur.lastrowid
+
+            return created_id
 
     def delete(self, id):
-        with self.con:
-            cur = self.con.cursor()
-            query = "DELETE FROM topic WHERE t_id = ?"
+        with self.conn:
+            cur = self.conn.cursor()
+            query = "DELETE FROM theme WHERE t_id = ?"
 
             cur.execute(query, (id,))
 
-    def get_all(self) -> list[Topic]:
-        with self.con:
-            cur = self.con.cursor()
-            query = "SELECT t_description FROM topic"
+    def get_all(self) -> list[Theme]:
+        with self.conn:
+            cur = self.conn.cursor()
+            query = "SELECT t_description FROM theme"
 
-            return [Topic(c[0]) for c in cur.execute(query).fetchall()]
+            return [Theme(c[0]) for c in cur.execute(query).fetchall()]
 
-    def get_by_id(self, id) -> Optional[Topic]:
-        with self.con:
-            cur = self.con.cursor()
-            query = "SELECT t_description FROM topic WHERE t_id = ?"
+    def get_by_id(self, id) -> Optional[Theme]:
+        with self.conn:
+            cur = self.conn.cursor()
+            query = "SELECT t_description FROM theme WHERE t_id = ?"
             result = cur.execute(query, (id,)).fetchone()
 
             if result:
-                return Topic(result[0])
+                return Theme(result[0])
             return None
 
 class BookRepository:
 
-    def __init__(self, con):
-        self.con = con
+    def __init__(self, conn):
+        self.conn = conn
 
 
-    def add(self, book, topic):
-        with self.con:
-            cur = self.con.cursor()
+    def add(self, book, theme):
+        with self.conn:
+            cur = self.conn.cursor()
             query = """INSERT INTO book (
                         b_id,
                         b_author,
                         b_title,
-                        b_pub_date,
-                        b_topic) VALUES (
+                        b_pub_year,
+                        b_theme) VALUES (
                         ?,?,?,?,?)"""
 
             cur.execute(
@@ -71,19 +73,21 @@ class BookRepository:
                     None,
                     book.author,
                     book.title,
-                    book.publication_date,
-                    topic,
+                    book.publication_year,
+                    theme,
                 ) )
 
-            return cur.lastrowid
+            created_id = cur.lastrowid
+
+            return created_id
 
     def update(self, book, id):
-        with self.con:
-            cur = self.con.cursor()
+        with self.conn:
+            cur = self.conn.cursor()
             query = """UPDATE book SET
                         b_author = ?,
                         b_title = ?,
-                        b_pub_date = ?
+                        b_pub_year = ?
                         WHERE b_id = ?"""
 
             cur.execute(
@@ -91,51 +95,53 @@ class BookRepository:
                 (
                     book.author,
                     book.title,
-                    book.publication_date,
+                    book.publication_year,
                     id,
                 ) )
 
     def delete(self, id):
-        with self.con:
-            cur = self.con.cursor()
+        with self.conn:
+            cur = self.conn.cursor()
             query = "DELETE FROM book WHERE b_id = ?"
 
             cur.execute(query, (id,))
 
-    def get_all(self, topic_id) -> list[Book]:
-        with self.con:
-            cur = self.con.cursor()
+    def get_all(self, theme_id) -> list[Book]:
+        with self.conn:
+            cur = self.conn.cursor()
             query = """SELECT
                         b_author,
                         b_title,
-                        b_pub_date
-                       FROM book WHERE b_topic = ?"""
+                        b_pub_year,
+                        b_theme
+                       FROM book WHERE b_theme = ?"""
 
-            return [Book(author = b[0], title = b[1], publication_date = b[2]) for b in cur.execute(query, (topic_id,)).fetchall()]
+            return [PersistedBook(author = b[0], title = b[1], publication_year = b[2], theme_id = b[3]) for b in cur.execute(query, (theme_id,)).fetchall()]
 
     def get_by_id(self, id):
-        with self.con:
-            cur = self.con.cursor()
+        with self.conn:
+            cur = self.conn.cursor()
             query = """SELECT
                         b_author,
                         b_title,
-                        b_pub_date
+                        b_pub_year,
+                        b_theme
                        FROM book WHERE b_id = ?"""
 
             result = cur.execute(query, (id,)).fetchone()
 
             if result:
-                return Book(result[0], result[1], result[2])
+                return PersistedBook(author = result[0], title = result[1], publication_year = result[2], theme_id = result[3])
             return None
 
 class ReviewRepository:
 
-    def __init__(self, con):
-        self.con = con
+    def __init__(self, conn):
+        self.conn = conn
 
     def add(self, review, book):
-        with self.con:
-            cur = self.con.cursor()
+        with self.conn:
+            cur = self.conn.cursor()
             query = """INSERT INTO review (
                         r_id,
                         r_guest,
@@ -153,18 +159,20 @@ class ReviewRepository:
                 )
             )
 
-            return cur.lastrowid
+            created_id = cur.lastrowid
+
+            return created_id
 
     def delete(self, id):
-        with self.con:
-            cur = self.con.cursor()
+        with self.conn:
+            cur = self.conn.cursor()
             query = "DELETE FROM review WHERE r_id = ?"
 
             cur.execute(query, (id,))
 
     def get_all(self, book_id) -> list[Review]:
-        with self.con:
-            cur = self.con.cursor()
+        with self.conn:
+            cur = self.conn.cursor()
             query = """SELECT
                         r_guest,
                         r_content
@@ -173,8 +181,8 @@ class ReviewRepository:
             return [Review(guest = r[0], content = r[1]) for r in cur.execute(query, (book_id,)).fetchall()]
 
     def get_by_id(self,id) -> Optional[Review]:
-        with self.con:
-            cur = self.con.cursor()
+        with self.conn:
+            cur = self.conn.cursor()
             query = """SELECT
                         r_guest,
                         r_content
@@ -187,12 +195,12 @@ class ReviewRepository:
 
 class ScoreRepository:
 
-    def __init__(self, con):
-        self.con = con
+    def __init__(self, conn):
+        self.conn = conn
 
     def add(self, score, book):
-        with self.con:
-            cur = self.con.cursor()
+        with self.conn:
+            cur = self.conn.cursor()
             query = """INSERT INTO score (
                         s_id,
                         s_guest,
@@ -209,11 +217,13 @@ class ScoreRepository:
                     book,
                 ) )
 
-            return cur.lastrowid
+            created_id = cur.lastrowid
+
+            return created_id
 
     def get_all(self, book_id):
-        with self.con:
-            cur = self.con.cursor()
+        with self.conn:
+            cur = self.conn.cursor()
             query = "SELECT s_id, s_value FROM score WHERE s_book = ?"
 
             return [PersistedScore(s[0], s[1]) for s in cur.execute(query, (book_id,)).fetchall()]

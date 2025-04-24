@@ -1,25 +1,25 @@
-from model import Book, Review, Score, Topic
-from repository import BookRepository, ReviewRepository, ScoreRepository, TopicRepository
+from model import Book, Review, Score, Theme
+from repository import BookRepository, ReviewRepository, ScoreRepository, ThemeRepository
 
-class TopicService:
-    def __init__(self, topic_repository: TopicRepository):
-        self.topic_repository = topic_repository
+class ThemeService:
+    def __init__(self, theme_repository: ThemeRepository):
+        self.theme_repository = theme_repository
 
-    def get_all_topics(self):
-        return self.topic_repository.get_all()
+    def get_all_themes(self):
+        return self.theme_repository.get_all()
 
-    def add_topic(self, topic: Topic):
-        return self.topic_repository.add(topic)
+    def add_theme(self, theme: Theme):
+        return self.theme_repository.add(theme)
 
 class BookService:
     def __init__(self, book_repository: BookRepository):
         self.book_repository = book_repository
 
-    def get_all_books(self, topic_id):
-        return self.book_repository.get_all(topic_id)
+    def get_all_books(self, theme_id):
+        return self.book_repository.get_all(theme_id)
 
-    def add_book(self, book: Book, topic_id):
-        return self.book_repository.add(book, topic_id)
+    def add_book(self, book: Book, theme_id):
+        return self.book_repository.add(book, theme_id)
 
     def update_book(self, book: Book, book_id):
         return self.book_repository.update(book, book_id)

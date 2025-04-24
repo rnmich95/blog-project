@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class Topic:
+class Theme:
     description: str
 
     @classmethod
@@ -14,17 +14,21 @@ class Topic:
 class Book:
     author: str
     title: str
-    publication_date: str
+    publication_year: str
 
     @classmethod
     def from_json(cls, json):
         assert json["author"].strip() != "", "No author provided"
         assert json["title"].strip() != "", "No title provided"
-        assert json["publication_date"].strip() != "", "No publication date provided"
+        assert json["publication_year"].strip() != "", "No publication year provided"
         return cls(
             author = json["author"],
             title = json["title"],
-            publication_date = json["publication_date"] )
+            publication_year = json["publication_year"] )
+
+@dataclass
+class PersistedBook(Book):
+    theme_id: int
 
 @dataclass
 class Review:

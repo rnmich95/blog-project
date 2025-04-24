@@ -2,33 +2,32 @@ import random
 import sqlite3
 import unittest
 
-from model import Book, Review, Score, Topic
-from repository import BookRepository, ReviewRepository, ScoreRepository, TopicRepository
+from model import Book, Review, Score, Theme
+from repository import BookRepository, ReviewRepository, ScoreRepository, ThemeRepository
 from test.util import random_string
 
-# create a separate class for database set up and tear down
-class TestTopicRepository(unittest.TestCase):
+class ThemeRepositoryTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.con = sqlite3.connect("blog_unit_test.db")
+        cls.conn = sqlite3.connect("blog_unit_test.db")
 
         with open("src/schema.sql", "r") as schema:
             schema_script = schema.read()
-            cls.con.executescript(schema_script)
+            cls.conn.executescript(schema_script)
 
-        cls.repository = TopicRepository(cls.con)
+        cls.repository = ThemeRepository(cls.conn)
 
     @classmethod
     def tearDownClass(cls):
-        cls.con.close()
+        cls.conn.close()
 
-    def test_create_topic(self):
+    def test_create_theme(self):
         description = random_string()
-        topic = Topic(description = description)
+        theme = Theme(description = description)
 
-        TestTopicRepository.repository.add(topic)
-        result = TestTopicRepository.repository.get_all()
+        ThemeRepositoryTest.repository.add(theme)
+        result = ThemeRepositoryTest.repository.get_all()
 
         for r in result:
             if r.description == description:
@@ -36,53 +35,53 @@ class TestTopicRepository(unittest.TestCase):
 
         self.assertFalse(True)
 
-    def test_delete_topic(self):
+    def test_delete_theme(self):
         description = random_string()
-        topic = Topic(description = description)
-        _id = TestTopicRepository.repository.add(topic)
+        theme = Theme(description = description)
+        created_id = ThemeRepositoryTest.repository.add(theme)
 
-        TestTopicRepository.repository.delete(_id)
+        ThemeRepositoryTest.repository.delete(created_id)
 
-        result = TestTopicRepository.repository.get_by_id(_id)
+        result = ThemeRepositoryTest.repository.get_by_id(created_id)
         self.assertEqual(result, None)
 
-class TestBookRepository(unittest.TestCase):
+class BookRepositoryTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.con = sqlite3.connect("blog_unit_test.db")
+        cls.conn = sqlite3.connect("blog_unit_test.db")
 
         with open("src/schema.sql", "r") as schema:
             schema_script = schema.read()
-            cls.con.executescript(schema_script)
+            cls.conn.executescript(schema_script)
 
-        cls.bookRepository  = BookRepository(cls.con)
-        cls.topicRepository = TopicRepository(cls.con)
+        cls.book_repository  = BookRepository(cls.conn)
+        cls.theme_repository = ThemeRepository(cls.conn)
 
     @classmethod
     def tearDownClass(cls):
-        cls.con.close()
+        cls.conn.close()
 
     def test_create_book(self):
         author = random_string()
         title  = random_string()
-        publication_date = random_string()
+        publication_year = random_string()
         book   = Book(author = author,
                       title = title,
-                      publication_date = publication_date )
+                      publication_year = publication_year )
 
         description = random_string()
-        topic  = Topic(description = description)
+        theme  = Theme(description = description)
 
-        topic_id = TestBookRepository.topicRepository.add(topic)
+        created_theme_id = BookRepositoryTest.theme_repository.add(theme)
 
-        TestBookRepository.bookRepository.add(book, topic_id)
-        result = TestBookRepository.bookRepository.get_all(topic_id)
+        BookRepositoryTest.book_repository.add(book, created_theme_id)
+        result = BookRepositoryTest.book_repository.get_all(created_theme_id)
 
         for b in result:
             if b.author == author and \
                b.title == title and \
-               b.publication_date == publication_date:
+               b.publication_year == publication_year:
 
                 return
 
@@ -91,31 +90,31 @@ class TestBookRepository(unittest.TestCase):
     def test_update_book(self):
         book = Book(author = random_string(),
                     title = random_string(),
-                    publication_date = random_string() )
+                    publication_year = random_string() )
 
-        print(book.publication_date)
+        print(book.publication_year)
 
-        topic = Topic(description = random_string())
+        theme = Theme(description = random_string())
 
-        topic_id = TestBookRepository.topicRepository.add(topic)
-        book_id = TestBookRepository.bookRepository.add(book, topic_id)
+        created_theme_id = BookRepositoryTest.theme_repository.add(theme)
+        created_book_id = BookRepositoryTest.book_repository.add(book, created_theme_id)
 
         author = random_string()
         title = random_string()
-        publication_date = random_string()
+        publication_year = random_string()
 
         new_book = Book(author = author,
                         title = title,
-                        publication_date = publication_date )
+                        publication_year = publication_year )
 
-        print(new_book.publication_date)
+        print(new_book.publication_year)
 
-        TestBookRepository.bookRepository.update(new_book, book_id)
-        result = TestBookRepository.bookRepository.get_by_id(book_id)
+        BookRepositoryTest.book_repository.update(new_book, created_book_id)
+        result = BookRepositoryTest.book_repository.get_by_id(created_book_id)
 
         if result.author == author and \
            result.title == title and \
-           result.publication_date == publication_date:
+           result.publication_year == publication_year:
 
             return
 
@@ -124,52 +123,52 @@ class TestBookRepository(unittest.TestCase):
     def test_delete_book(self):
         book = Book(author = random_string(),
                     title = random_string(),
-                    publication_date = random_string())
+                    publication_year = random_string())
 
-        topic = Topic(description = random_string())
+        theme = Theme(description = random_string())
 
-        topic_id = TestBookRepository.topicRepository.add(topic)
-        book_id = TestBookRepository.bookRepository.add(book, topic_id)
+        created_theme_id = BookRepositoryTest.theme_repository.add(theme)
+        created_book_id = BookRepositoryTest.book_repository.add(book, created_theme_id)
 
-        TestBookRepository.bookRepository.delete(book_id)
+        BookRepositoryTest.book_repository.delete(created_book_id)
 
-        result = TestBookRepository.bookRepository.get_by_id(book_id)
+        result = BookRepositoryTest.book_repository.get_by_id(created_book_id)
         self.assertEqual(result, None)
 
-class TestReviewRepository(unittest.TestCase):
+class ReviewRepositoryTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.con = sqlite3.connect("blog_unit_test.db")
+        cls.conn = sqlite3.connect("blog_unit_test.db")
 
         with open("src/schema.sql", "r") as schema:
             schema_script = schema.read()
-            cls.con.executescript(schema_script)
+            cls.conn.executescript(schema_script)
 
-        cls.topicRepository  = TopicRepository(cls.con)
-        cls.bookRepository   = BookRepository(cls.con)
-        cls.reviewRepository = ReviewRepository(cls.con)
+        cls.theme_repository  = ThemeRepository(cls.conn)
+        cls.book_repository   = BookRepository(cls.conn)
+        cls.review_repository = ReviewRepository(cls.conn)
 
     @classmethod
     def tearDownClass(cls):
-        cls.con.close()
+        cls.conn.close()
 
     def test_create_review(self):
-        topic = Topic(description = random_string())
-        topic_id = TestReviewRepository.topicRepository.add(topic)
+        theme = Theme(description = random_string())
+        created_theme_id = ReviewRepositoryTest.theme_repository.add(theme)
 
         book = Book(author = random_string(),
                     title = random_string(),
-                    publication_date = random_string() )
-        book_id = TestReviewRepository.bookRepository.add(book, topic_id)
+                    publication_year = random_string() )
+        created_book_id = ReviewRepositoryTest.book_repository.add(book, created_theme_id)
 
         guest = random_string()
         content = random_string()
 
         review = Review(guest = guest, content = content)
-        TestReviewRepository.reviewRepository.add(review, book_id)
+        ReviewRepositoryTest.review_repository.add(review, created_book_id)
 
-        result = TestReviewRepository.reviewRepository.get_all(book_id)
+        result = ReviewRepositoryTest.review_repository.get_all(created_book_id)
 
         for r in result:
             if r.guest == guest and \
@@ -180,59 +179,59 @@ class TestReviewRepository(unittest.TestCase):
         self.assertFalse(True)
 
     def test_delete_review(self):
-        topic = Topic(description = random_string())
-        topic_id = TestReviewRepository.topicRepository.add(topic)
+        theme = Theme(description = random_string())
+        created_theme_id = ReviewRepositoryTest.theme_repository.add(theme)
 
         book = Book(author = random_string(),
                     title = random_string(),
-                    publication_date = random_string() )
-        book_id = TestReviewRepository.bookRepository.add(book, topic_id)
+                    publication_year = random_string() )
+        created_book_id = ReviewRepositoryTest.book_repository.add(book, created_theme_id)
 
         guest = random_string()
         content = random_string()
 
         review = Review(guest = guest, content = content)
-        review_id = TestReviewRepository.reviewRepository.add(review, book_id)
+        created_review_id = ReviewRepositoryTest.review_repository.add(review, created_book_id)
 
-        TestReviewRepository.reviewRepository.delete(review_id)
+        ReviewRepositoryTest.review_repository.delete(created_review_id)
 
-        result = TestReviewRepository.reviewRepository.get_by_id(review_id)
+        result = ReviewRepositoryTest.review_repository.get_by_id(created_review_id)
 
         self.assertEqual(result, None)
 
-class TestScoreRepository(unittest.TestCase):
+class ScoreRepositoryTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.con = sqlite3.connect("blog_unit_test.db")
+        cls.conn = sqlite3.connect("blog_unit_test.db")
 
         with open("src/schema.sql", "r") as schema:
             schema_script = schema.read()
-            cls.con.executescript(schema_script)
+            cls.conn.executescript(schema_script)
 
-        cls.topicRepository = TopicRepository(cls.con)
-        cls.bookRepository  = BookRepository(cls.con)
-        cls.scoreRepository = ScoreRepository(cls.con)
+        cls.theme_repository = ThemeRepository(cls.conn)
+        cls.book_repository  = BookRepository(cls.conn)
+        cls.score_repository = ScoreRepository(cls.conn)
 
     @classmethod
     def tearDownClass(cls):
-        cls.con.close()
+        cls.conn.close()
 
     def test_create_score(self):
-        topic = Topic(description = random_string())
-        topic_id = TestScoreRepository.topicRepository.add(topic)
+        theme = Theme(description = random_string())
+        created_theme_id = ScoreRepositoryTest.theme_repository.add(theme)
 
         book = Book(author = random_string(),
                     title = random_string(),
-                    publication_date = random_string() )
-        book_id = TestScoreRepository.bookRepository.add(book, topic_id)
+                    publication_year = random_string() )
+        created_book_id = ScoreRepositoryTest.book_repository.add(book, created_theme_id)
 
         guest = random_string()
         value = random.randint(1,5)
 
         score = Score(guest,value)
-        score_id = TestScoreRepository.scoreRepository.add(score, book_id)
+        score_id = ScoreRepositoryTest.score_repository.add(score, created_book_id)
 
-        result = TestScoreRepository.scoreRepository.get_all(book_id)
+        result = ScoreRepositoryTest.score_repository.get_all(created_book_id)
         for s in result:
             if s._id == score_id and s.value == value:
                 return
