@@ -1,5 +1,5 @@
 from typing import Optional
-from model import Book, PersistedBook, PersistedScore, Review, Score, Theme
+from model import Book, PersistedBook, PersistedReview, PersistedScore, PersistedTheme, Review, Score, Theme
 
 class ThemeRepository:
 
@@ -36,18 +36,18 @@ class ThemeRepository:
     def get_all(self) -> list[Theme]:
         with self.conn:
             cur = self.conn.cursor()
-            query = "SELECT t_description FROM theme"
+            query = "SELECT t_id, t_description FROM theme"
 
-            return [Theme(c[0]) for c in cur.execute(query).fetchall()]
+            return [PersistedTheme(_id = t[0], description = t[1]) for t in cur.execute(query).fetchall()]
 
     def get_by_id(self, id) -> Optional[Theme]:
         with self.conn:
             cur = self.conn.cursor()
-            query = "SELECT t_description FROM theme WHERE t_id = ?"
-            result = cur.execute(query, (id,)).fetchone()
+            query = "SELECT t_id, t_description FROM theme WHERE t_id = ?"
+            t = cur.execute(query, (id,)).fetchone()
 
-            if result:
-                return Theme(result[0])
+            if t:
+                return PersistedTheme(t[0], t[1])
             return None
 
 class BookRepository:
@@ -56,7 +56,7 @@ class BookRepository:
         self.conn = conn
 
 
-    def add(self, book, theme):
+    def add(self, book):
         with self.conn:
             cur = self.conn.cursor()
             query = """INSERT INTO book (
@@ -74,7 +74,7 @@ class BookRepository:
                     book.author,
                     book.title,
                     book.publication_year,
-                    theme,
+                    book.theme_id,
                 ) )
 
             created_id = cur.lastrowid
@@ -110,18 +110,20 @@ class BookRepository:
         with self.conn:
             cur = self.conn.cursor()
             query = """SELECT
+                        b_id,
                         b_author,
                         b_title,
                         b_pub_year,
                         b_theme
                        FROM book WHERE b_theme = ?"""
 
-            return [PersistedBook(author = b[0], title = b[1], publication_year = b[2], theme_id = b[3]) for b in cur.execute(query, (theme_id,)).fetchall()]
+            return [PersistedBook(_id = b[0], author = b[1], title = b[2], publication_year = b[3], theme_id = b[4]) for b in cur.execute(query, (theme_id,)).fetchall()]
 
     def get_by_id(self, id):
         with self.conn:
             cur = self.conn.cursor()
             query = """SELECT
+                        b_id,
                         b_author,
                         b_title,
                         b_pub_year,
@@ -131,7 +133,7 @@ class BookRepository:
             result = cur.execute(query, (id,)).fetchone()
 
             if result:
-                return PersistedBook(author = result[0], title = result[1], publication_year = result[2], theme_id = result[3])
+                return PersistedBook(_id = result[0], author = result[1], title = result[2], publication_year = result[3], theme_id = result[4])
             return None
 
 class ReviewRepository:
@@ -139,7 +141,7 @@ class ReviewRepository:
     def __init__(self, conn):
         self.conn = conn
 
-    def add(self, review, book):
+    def add(self, review):
         with self.conn:
             cur = self.conn.cursor()
             query = """INSERT INTO review (
@@ -155,7 +157,7 @@ class ReviewRepository:
                     None,
                     review.guest,
                     review.content,
-                    book,
+                    review.book_id,
                 )
             )
 
@@ -174,23 +176,26 @@ class ReviewRepository:
         with self.conn:
             cur = self.conn.cursor()
             query = """SELECT
+                        r_id,
                         r_guest,
-                        r_content
+                        r_content,
+                        r_book
                        FROM review WHERE r_book = ?"""
 
-            return [Review(guest = r[0], content = r[1]) for r in cur.execute(query, (book_id,)).fetchall()]
+            return [PersistedReview(_id = r[0], guest = r[1], content = r[2], book_id = r[3]) for r in cur.execute(query, (book_id,)).fetchall()]
 
     def get_by_id(self,id) -> Optional[Review]:
         with self.conn:
             cur = self.conn.cursor()
             query = """SELECT
+                        r_id,
                         r_guest,
                         r_content
                         FROM review WHERE r_id = ?"""
             result = cur.execute(query, (id,)).fetchone()
 
             if result:
-                return Review(guest = result[0], content = result[1])
+                return PersistedReview(_id = result[0], guest = result[1], content = result[2], book_id = result[3])
             return None
 
 class ScoreRepository:
@@ -198,7 +203,7 @@ class ScoreRepository:
     def __init__(self, conn):
         self.conn = conn
 
-    def add(self, score, book):
+    def add(self, score):
         with self.conn:
             cur = self.conn.cursor()
             query = """INSERT INTO score (
@@ -214,7 +219,7 @@ class ScoreRepository:
                     None,
                     score.guest,
                     score.value,
-                    book,
+                    score.book_id,
                 ) )
 
             created_id = cur.lastrowid
@@ -224,6 +229,11 @@ class ScoreRepository:
     def get_all(self, book_id):
         with self.conn:
             cur = self.conn.cursor()
-            query = "SELECT s_id, s_value FROM score WHERE s_book = ?"
+            query = """SELECT
+                        s_id,
+                        s_guest,
+                        s_value,
+                        s_book
+                       FROM score WHERE s_book = ?"""
 
-            return [PersistedScore(s[0], s[1]) for s in cur.execute(query, (book_id,)).fetchall()]
+            return [PersistedScore(_id = s[0], guest = s[1], value = s[2], book_id = s[3]) for s in cur.execute(query, (book_id,)).fetchall()]

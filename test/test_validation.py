@@ -22,9 +22,10 @@ class ValidationTest(unittest.TestCase):
     def test_validate_book_from_json(self):
         d = """{"author": "J. K. Rowling",
                 "title": "Harry Potter and the Philosopher's Stone",
-                "publication_year": "1997"}"""
+                "publication_year": "1997",
+                "theme_id": 1}"""
 
-        expected = Book("J. K. Rowling", "Harry Potter and the Philosopher's Stone", "1997")
+        expected = Book("J. K. Rowling", "Harry Potter and the Philosopher's Stone", "1997", 1)
         self.assertEqual(expected, validate_and_build(Book, json.loads(d)))
 
     def test_invalidate_book_from_json(self):

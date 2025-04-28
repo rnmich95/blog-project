@@ -1,24 +1,10 @@
-from dataclasses import asdict
-import sqlite3
-import sys
-import logging
-
-from typing import Dict
-from flask import Flask, current_app, jsonify, request
-from jsonschema import validate
-
-from config import read_config
 from model import Book, Theme
-from repository import BookRepository, ReviewRepository, ScoreRepository, ThemeRepository
-from service import BookService, ReviewService, ScoreService, ThemeService
+from dataclasses import asdict
+from jsonschema import validate
+from flask import Blueprint, current_app, jsonify, request
 
-logging.basicConfig(
-    filename='test.log',
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
-app = Flask(__name__)
+""" Blueprint: a way to organize a group of related views and other code """
+api = Blueprint('api', __name__)
 
 SCHEMAS = {
     Theme.__name__: {
@@ -35,9 +21,10 @@ SCHEMAS = {
         "properties": {
             "author": {"type": "string"},
             "title": {"type": "string"},
-            "publication_year": {"type": "string"}
+            "publication_year": {"type": "string"},
+            "theme_id": {"type": "number"}
         },
-        "required": ["author", "title", "publication_year"],
+        "required": ["author", "title", "publication_year", "theme_id"],
         "additionalProperties": False,
     }
 }
@@ -46,16 +33,28 @@ def validate_and_build(cls, data):
     validate(instance=data, schema=SCHEMAS[cls.__name__])
     return cls.from_json(data)
 
-@app.route('/themes', methods=['GET'])
+@api.route('/themes', methods=['GET'])
 def get_themes():
     service = current_app.config["services"]["theme"]
     themes = service.get_all_themes()
+    """ * mapear explicitamente com uma funcao ou classe * """
     dics = [asdict(t) for t in themes]
 
     return jsonify(dics)
+"""
+arquivo view
 
-@app.route('/themes', methods=['POST'])
+@app.route('/themes/new', methods=['GET'])
+def show_theme_form():
+    return render_template("create_theme.html")
+"""
+
+@api.route('/themes', methods=['POST'])
 def create_theme():
+    """ estou engolindo o erro
+        inserir o stack trace completo e timestamp dentro de um arquivo e
+        imprima o erro
+    """
     try:
         theme = validate_and_build(Theme, request.json)
     except:
@@ -66,7 +65,7 @@ def create_theme():
 
     return jsonify({"created_id" : _id}), 201
 
-@app.route('/books/<int:theme_id>', methods=['GET'])
+@api.route('/books/<int:theme_id>', methods=['GET'])
 def get_books(theme_id):
     service = current_app.config['services']['book']
     books = service.get_all_books(theme_id)
@@ -74,32 +73,43 @@ def get_books(theme_id):
 
     return jsonify(dics)
 
-def init_repositories(con) -> Dict[str,object]:
-    return {
-        "theme" : ThemeRepository(con),
-        "book" : BookRepository(con),
-        "review" : ReviewRepository(con),
-        "score": ScoreRepository(con)
-    }
+@api.route('/books/<int:theme_id>', methods=['POST'])
+def create_book(theme_id):
+    try:
+        book = validate_and_build(Book, request.json)
+    except:
+        return jsonify({"error": "Json format not acceptable"}), 406
 
-def init_services(repositories) -> Dict[str,object]:
-    return {
-        "theme" : ThemeService(repositories["theme"]),
-        "book" : BookService(repositories["book"]),
-        "review" : ReviewService(repositories["review"]),
-        "score" : ScoreService(repositories["score"])
-    }
+    service = current_app.config["services"]["book"]
+    _id = service.add_book(book)
 
-if __name__ == '__main__':
+    return jsonify({"created_id" : _id}), 201
 
-    config = read_config()
+@api.route('/books/<int:book_id>', methods=['PUT'])
+def update_book(book_id):
+    try:
+        book = validate_and_build(Book, request.json)
+    except:
+        return jsonify({"error": "Json format not acceptable"}), 406
 
-    conn = sqlite3.connect(sys.argv[1], check_same_thread=False)
+    service = current_app.config["services"]["book"]
 
-    respositories = init_repositories(conn)
+    persisted_book = service.get_one_book(book_id)
+    if persisted_book:
+        service.update_book(book, book_id)
 
-    services = init_services(respositories)
+        return jsonify({"persisted_id" : book_id}), 200
 
-    app.config["services"] = services
+    return jsonify({"error": "Book not found"}), 404
 
-    app.run(host=config.host, port=config.port, debug=config.debug)
+@api.route('/books/<int:book_id>', methods=['DELETE'])
+def delete_book(book_id):
+    service = current_app.config["services"]["book"]
+
+    persisted_book = service.get_one_book(book_id)
+    if persisted_book:
+        service.delete_book(book_id)
+
+        return jsonify({"deleted_id" : book_id}), 200
+
+    return jsonify({"error": "Book not found"}), 404

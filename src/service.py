@@ -18,8 +18,11 @@ class BookService:
     def get_all_books(self, theme_id):
         return self.book_repository.get_all(theme_id)
 
-    def add_book(self, book: Book, theme_id):
-        return self.book_repository.add(book, theme_id)
+    def get_one_book(self, book_id):
+        return self.book_repository.get_by_id(book_id)
+
+    def add_book(self, book: Book):
+        return self.book_repository.add(book)
 
     def update_book(self, book: Book, book_id):
         return self.book_repository.update(book, book_id)
@@ -34,8 +37,8 @@ class ReviewService:
     def get_all_reviews(self, book_id):
         return self.review_repository.get_all(book_id)
 
-    def add_review(self, review: Review, book_id):
-        return self.review_repository.add(review, book_id)
+    def add_review(self, review: Review):
+        return self.review_repository.add(review)
 
     def delete_review(self, review_id):
         return self.review_repository.delete(review_id)
@@ -51,5 +54,5 @@ class ScoreService:
 
         return avarage
 
-    def add_score(self, score: Score, book_id):
-        return self.score_repository.add(score, book_id)
+    def add_score(self, score: Score):
+        return self.score_repository.add(score)
