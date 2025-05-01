@@ -37,6 +37,9 @@ class ReviewService:
     def get_all_reviews(self, book_id):
         return self.review_repository.get_all(book_id)
 
+    def get_one_review(self, review_id):
+        return self.review_repository.get_by_id(review_id)
+
     def add_review(self, review: Review):
         return self.review_repository.add(review)
 

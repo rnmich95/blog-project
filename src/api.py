@@ -1,4 +1,7 @@
-from model import Book, Theme
+import datetime
+import logging
+import traceback
+from model import Book, Review, Theme
 from dataclasses import asdict
 from jsonschema import validate
 from flask import Blueprint, current_app, jsonify, request
@@ -26,6 +29,17 @@ SCHEMAS = {
         },
         "required": ["author", "title", "publication_year", "theme_id"],
         "additionalProperties": False,
+    },
+
+    Review.__name__: {
+        "type": "object",
+        "properties": {
+           "guest": {"type": "string"},
+           "content": {"type": "string"},
+           "book_id": {"type": "number"}
+        },
+        "required": ["guest", "content", "book_id"],
+        "additionalProperties": False,
     }
 }
 
@@ -37,39 +51,30 @@ def validate_and_build(cls, data):
 def get_themes():
     service = current_app.config["services"]["theme"]
     themes = service.get_all_themes()
-    """ * mapear explicitamente com uma funcao ou classe * """
-    dics = [asdict(t) for t in themes]
+
+    dics = [t.to_dict() for t in themes]
 
     return jsonify(dics)
-"""
-arquivo view
-
-@app.route('/themes/new', methods=['GET'])
-def show_theme_form():
-    return render_template("create_theme.html")
-"""
 
 @api.route('/themes', methods=['POST'])
 def create_theme():
-    """ estou engolindo o erro
-        inserir o stack trace completo e timestamp dentro de um arquivo e
-        imprima o erro
-    """
     try:
         theme = validate_and_build(Theme, request.json)
-    except:
-        return jsonify({"error": "Json format not acceptable"}), 406
 
-    service = current_app.config["services"]["theme"]
-    _id = service.add_theme(theme)
+        service = current_app.config["services"]["theme"]
+        _id = service.add_theme(theme)
 
-    return jsonify({"created_id" : _id}), 201
+        return jsonify({"created_id" : _id}), 201
+
+    except Exception as e:
+        logging.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 406
 
 @api.route('/books/<int:theme_id>', methods=['GET'])
 def get_books(theme_id):
     service = current_app.config['services']['book']
     books = service.get_all_books(theme_id)
-    dics = [asdict(b) for b in books]
+    dics = [b.to_dict() for b in books]
 
     return jsonify(dics)
 
@@ -77,30 +82,32 @@ def get_books(theme_id):
 def create_book(theme_id):
     try:
         book = validate_and_build(Book, request.json)
-    except:
-        return jsonify({"error": "Json format not acceptable"}), 406
 
-    service = current_app.config["services"]["book"]
-    _id = service.add_book(book)
+        service = current_app.config["services"]["book"]
+        _id = service.add_book(book)
 
-    return jsonify({"created_id" : _id}), 201
+        return jsonify({"created_id" : _id}), 201
+
+    except Exception as e:
+        logging.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 406
 
 @api.route('/books/<int:book_id>', methods=['PUT'])
 def update_book(book_id):
     try:
         book = validate_and_build(Book, request.json)
-    except:
-        return jsonify({"error": "Json format not acceptable"}), 406
 
-    service = current_app.config["services"]["book"]
+        service = current_app.config["services"]["book"]
+        persisted_book = service.get_one_book(book_id)
 
-    persisted_book = service.get_one_book(book_id)
-    if persisted_book:
-        service.update_book(book, book_id)
+        if persisted_book:
+            service.update_book(book, book_id)
+            return jsonify({"persisted_id" : book_id}), 200
+        return jsonify({"error": "Book not found"}), 404
 
-        return jsonify({"persisted_id" : book_id}), 200
-
-    return jsonify({"error": "Book not found"}), 404
+    except Exception as e:
+        logging.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 406
 
 @api.route('/books/<int:book_id>', methods=['DELETE'])
 def delete_book(book_id):
@@ -113,3 +120,37 @@ def delete_book(book_id):
         return jsonify({"deleted_id" : book_id}), 200
 
     return jsonify({"error": "Book not found"}), 404
+
+@api.route('/reviews/<int:book_id>', methods=['GET'])
+def get_reviews(book_id):
+    service = current_app.config['services']['review']
+    reviews = service.get_all_reviews(book_id)
+    dics = [r.to_dict() for r in reviews]
+
+    return jsonify(dics)
+
+@api.route('/reviews/<int:book_id>', methods=['POST'])
+def create_review(book_id):
+    try:
+        review = validate_and_build(Review, request.json)
+
+        service = current_app.config["services"]["review"]
+        _id = service.add_review(review)
+
+        return jsonify({"created_id" : _id}), 201
+
+    except Exception as e:
+        logging.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 406
+
+@api.route('/reviews/<int:review_id>', methods=['DELETE'])
+def delete_review(review_id):
+    service = current_app.config["services"]["review"]
+
+    persisted_review = service.get_one_review(review_id)
+    if persisted_review:
+        service.delete_review(review_id)
+
+        return jsonify({"deleted_id" : review_id}), 200
+
+    return jsonify({"error": "Review not found"}), 404

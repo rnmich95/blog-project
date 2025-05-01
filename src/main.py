@@ -2,6 +2,7 @@ import sys
 import logging
 import sqlite3
 from api import api
+from view import view
 from flask import Flask
 from typing import Dict
 from config import read_config
@@ -32,7 +33,7 @@ def init_services(repositories) -> Dict[str,object]:
         "score" : ScoreService(repositories["score"])
     }
 
-""" use argpasre """
+""" use argparse """
 if __name__ == '__main__':
 
     config = read_config()
@@ -46,5 +47,7 @@ if __name__ == '__main__':
     app.config["services"] = services
 
     app.register_blueprint(api)
+
+    app.register_blueprint(view)
 
     app.run(host=config.host, port=config.port, debug=config.debug)

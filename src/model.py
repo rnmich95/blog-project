@@ -14,6 +14,10 @@ class Theme:
 class PersistedTheme(Theme):
     _id: int
 
+    def to_dict(self):
+     return {"id": self._id,
+             "description": self.description }
+
 @dataclass
 class Book:
     author: str
@@ -37,15 +41,38 @@ class Book:
 class PersistedBook(Book):
     _id: int
 
+    def to_dict(self):
+        return {"id": self._id,
+                "author": self.author,
+                "title": self.title,
+                "publication_year": self.publication_year,
+                "theme_id": self.theme_id}
+
 @dataclass
 class Review:
     guest: str
     content: str
     book_id: int
 
+    @classmethod
+    def from_json(cls, json):
+        assert json["guest"].strip() != "", "No guest provided"
+        assert json["content"].strip() != "", "No content provided"
+        assert json["book_id"] != None, "No book_id provided"
+        return cls(
+            guest = json["guest"],
+            content = json["content"],
+            book_id = json["book_id"] )
+
 @dataclass
 class PersistedReview(Review):
     _id: int
+
+    def to_dict(self):
+        return {"id": self._id,
+                "guest": self.guest,
+                "content": self.content,
+                "book_id": self.book_id}
 
 @dataclass
 class Score:
@@ -56,3 +83,9 @@ class Score:
 @dataclass
 class PersistedScore(Score):
     _id: int
+
+    def to_dict(self):
+        return {"_id": self._id,
+                "guest": self.guest,
+                "value": self.value,
+                "book_id": self.book_id}

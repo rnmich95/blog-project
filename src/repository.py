@@ -190,7 +190,8 @@ class ReviewRepository:
             query = """SELECT
                         r_id,
                         r_guest,
-                        r_content
+                        r_content,
+                        r_book
                         FROM review WHERE r_id = ?"""
             result = cur.execute(query, (id,)).fetchone()
 
