@@ -1,3 +1,4 @@
+import argparse
 import sys
 import logging
 import sqlite3
@@ -33,12 +34,19 @@ def init_services(repositories) -> Dict[str,object]:
         "score" : ScoreService(repositories["score"])
     }
 
-""" use argparse """
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description = "")
+
+    parser.add_argument('db_file', help='select your SQLite .db file')
+
+    args = parser.parse_args()
 
     config = read_config()
 
-    conn = sqlite3.connect(sys.argv[1], check_same_thread=False)
+    # conn = sqlite3.connect(sys.argv[1], check_same_thread=False)
+
+    conn = sqlite3.connect(args.db_file, check_same_thread=False)
 
     respositories = init_repositories(conn)
 
