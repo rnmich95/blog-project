@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- block title: title displayed in the browser's tab and window table -->
+    <title>{% block title %}{% endblock %} - Flaskr</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <section class="content">
+      <!-- block header: similar to title but will change the title displayed on the page -->
+      <header class="header">{% block header %}{% endblock %}</header>
+      {% for message in get_flashed_messages() %}
+      <div class="flash">{{ message }}</div>
+      {% endfor %}
+      <!-- block content: is where the content of each page goes -->
+      {% block content %}{% endblock %}
+    </section>
+  </body>
+</html>
