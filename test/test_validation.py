@@ -4,7 +4,7 @@ from flask import json
 from jsonschema import ValidationError
 
 from api import validate_and_build
-from model import Book, Review, Theme
+from model import Book, Review, Score, Theme
 
 class ValidationTest(unittest.TestCase):
     def test_validate_theme_from_json(self):
@@ -47,3 +47,17 @@ class ValidationTest(unittest.TestCase):
 
         with self.assertRaises(ValidationError) as ctx:
             validate_and_build(Review, json.loads(d))
+
+    def test_validate_score_from_json(self):
+        d = """{"guest": "mich",
+                "value": 1,
+                "book_id": 5}"""
+
+        expected = Score("mich", 1, 5)
+        self.assertEqual(expected, validate_and_build(Score, json.loads(d)))
+
+    def test_invalidate_score_json(self):
+        d = """{}"""
+
+        with self.assertRaises(ValidationError) as ctx:
+            validate_and_build(Score, json.loads(d))

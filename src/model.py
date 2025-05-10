@@ -80,6 +80,16 @@ class Score:
     value: int
     book_id: int
 
+    @classmethod
+    def from_json(cls, json):
+        assert json["guest"].strip() != "", "No guest provided"
+        assert json["value"] != None, "No value provided"
+        assert json["book_id"] != None, "No book_id provided"
+        return cls(
+            guest = json["guest"],
+            value = json["value"],
+            book_id = json["book_id"] )
+
 @dataclass
 class PersistedScore(Score):
     _id: int

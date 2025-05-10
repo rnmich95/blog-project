@@ -14,6 +14,7 @@
     />
   </head>
   <body>
+    <h3></h3>
     <section class="content">
       <!-- block header: similar to title but will change the title displayed on the page -->
       <header class="header">{% block header %}{% endblock %}</header>
@@ -23,5 +24,6 @@
       <!-- block content: is where the content of each page goes -->
       {% block content %}{% endblock %}
     </section>
+    {% block scripts %}{% endblock %}
   </body>
 </html>

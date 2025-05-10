@@ -1,3 +1,4 @@
+import random
 import sqlite3
 import unittest
 import os
@@ -5,7 +6,7 @@ import os
 from flask import current_app, json
 from api import api
 from main import app, init_repositories, init_services
-from model import Book, Review, Theme
+from model import Book, Review, Score, Theme
 from test.util import random_string
 
 class TestAPI(unittest.TestCase):
@@ -219,3 +220,56 @@ class TestAPI(unittest.TestCase):
 
         response = TestAPI.client.delete(f"/reviews/{review_id}")
         self.assertEqual(response.status_code, 200)
+
+    def test_get_avarage_score(self):
+        theme = Theme(random_string())
+        theme_id = current_app.config["services"]["theme"].add_theme(theme)
+
+        book = Book(author = random_string(),
+                    title = random_string(),
+                    publication_year = random_string(),
+                    theme_id = theme_id)
+        book_id = current_app.config["services"]["book"].add_book(book)
+
+        s1 = Score(guest = random_string(),
+                   value = random.randint(1, 5),
+                   book_id = book_id)
+        current_app.config["services"]["score"].add_score(s1)
+
+        s2 = Score(guest = random_string(),
+                   value = random.randint(1, 5),
+                   book_id = book_id)
+        current_app.config["services"]["score"].add_score(s2)
+
+        response = TestAPI.client.get(f"/overall_score/{book_id}")
+        self.assertEqual(response.status_code, 200)
+
+        data = response.get_json()
+
+        if data["overall_score"] == (s1.value + s2.value) / 2:
+            return
+
+        self.assertFalse(True)
+
+    def test_add_score(self):
+        theme = Theme(random_string())
+        theme_id = current_app.config["services"]["theme"].add_theme(theme)
+
+        book = Book(author = random_string(),
+                    title = random_string(),
+                    publication_year = random_string(),
+                    theme_id = theme_id)
+        book_id = current_app.config["services"]["book"].add_book(book)
+
+        payload = {"guest": random_string(),
+                   "value": random.randint(1, 5),
+                   "book_id": book_id}
+
+        response = TestAPI.client.post(
+            f"/scores/{book_id}",
+            data = json.dumps(payload),
+            content_type = "application/json"
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertIn("created_id", response.get_json())

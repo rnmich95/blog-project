@@ -48,6 +48,10 @@ if __name__ == '__main__':
 
     conn = sqlite3.connect(args.db_file, check_same_thread=False)
 
+    with open("src/schema.sql", "r") as schema:
+            schema_script = schema.read()
+            conn.executescript(schema_script)
+
     respositories = init_repositories(conn)
 
     services = init_services(respositories)

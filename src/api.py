@@ -1,7 +1,6 @@
-import datetime
 import logging
 import traceback
-from model import Book, Review, Theme
+from model import Book, Review, Score, Theme
 from dataclasses import asdict
 from jsonschema import validate
 from flask import Blueprint, current_app, jsonify, request
@@ -39,6 +38,17 @@ SCHEMAS = {
            "book_id": {"type": "number"}
         },
         "required": ["guest", "content", "book_id"],
+        "additionalProperties": False,
+    },
+
+    Score.__name__: {
+        "type": "object",
+        "properties": {
+            "guest": {"type": "string"},
+            "value": {"type": "number"},
+            "book_id": {"type": "number"}
+        },
+        "required": ["guest", "value", "book_id"],
         "additionalProperties": False,
     }
 }
@@ -154,3 +164,24 @@ def delete_review(review_id):
         return jsonify({"deleted_id" : review_id}), 200
 
     return jsonify({"error": "Review not found"}), 404
+
+@api.route('/overall_score/<int:book_id>', methods=['GET'])
+def get_average_score(book_id):
+    service = current_app.config['services']['score']
+    score = service.get_avarage_score(book_id)
+
+    return jsonify({"overall_score" : score})
+
+@api.route('/scores/<int:book_id>', methods=['POST'])
+def add_score(book_id):
+    try:
+        score = validate_and_build(Score, request.json)
+
+        service = current_app.config["services"]["score"]
+        _id = service.add_score(score)
+
+        return jsonify({"created_id" : _id}), 201
+
+    except Exception as e:
+        logging.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 406
