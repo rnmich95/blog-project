@@ -1,0 +1,27 @@
+{% extends 'base.html' %} {% block header %}
+<h1>{% block title %}Propose a book{% endblock %}</h1>
+{% endblock %} {% block content %}
+<form
+  id="addBook"
+  action="{{ url_for('view.redirect_create_book_form') }}"
+  method="post"
+>
+  <input
+    type="text"
+    name="author"
+    id="author"
+    placeholder="author .."
+    required
+  />
+  <input type="text" name="title" id="title" placeholder="title .." required />
+  <input
+    type="text"
+    name="year"
+    id="year"
+    placeholder="year of publication .."
+    required
+  />
+  <input type="hidden" name="theme_id" id="theme_id" value="{{ t_id }}" />
+  <button type="submit">Submit</button>
+</form>
+{% endblock %}

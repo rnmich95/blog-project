@@ -1,0 +1,6 @@
+{% extends 'base.html' %} {% block header %}
+<h1>{% block title %}{% endblock %}</h1>
+{% endblock %} {% block content %} {% for r in reviews %} {{r.guest}}
+<div>{{r.content}}</div>
+<br />
+{% endfor %} {% endblock %}

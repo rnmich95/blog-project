@@ -1,0 +1,15 @@
+{% extends 'base.html' %} {% block header %}
+<h1>{% block title %}Proposed themes{% endblock %}</h1>
+{% endblock %} {% block content %}
+<ul class="custom-bullets">
+  {% for t in themes %}
+  <li>
+    <a href="{{ url_for('view.show_list_of_books', theme_id=t._id)}}">
+      {{t.description}}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+<br />
+<a href="{{ url_for('view.show_create_theme_form')}}">Propose a new one</a>
+{% endblock %}

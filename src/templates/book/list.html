@@ -1,0 +1,21 @@
+{% extends 'base.html' %} {% block header %}
+<h1>{% block title %}{% endblock %}</h1>
+{% endblock %} {% block content %} {% for b in books %}
+<table>
+  <tr>
+    <td>{{ b.author }}</td>
+    <td><i>{{ b.title }}</i></td>
+    <td>{{ b.publication_year }}</td>
+    <td>
+      <a href="{{ url_for('view.show_list_of_reviews', book_id=b._id)}}">
+        Comments
+      </a>
+    </td>
+  </tr>
+</table>
+<br />
+{% endfor %}
+<a href="{{ url_for('view.show_create_book_form', theme_id=t_id)}}">
+  Propose a book
+</a>
+{% endblock %}

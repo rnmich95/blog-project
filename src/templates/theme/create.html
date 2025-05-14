@@ -19,6 +19,12 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: payload,
+      }).then((response) => {
+        if (response.ok) {
+          window.location.href = "/list_themes";
+        } else {
+          alert("Error, try again !");
+        }
       });
 
       console.log(await response.json());
