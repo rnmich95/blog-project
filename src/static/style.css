@@ -24,6 +24,12 @@ header {
     margin-bottom: 40px;
   }
 
+.flash {
+  color: red;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
 h1 {
   margin-bottom: 40px;
   text-align: left;
@@ -53,17 +59,16 @@ td {
 
 a {
   color: inherit;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 a:hover {
-  text-decoration: underline;
   color: rgb(121, 254, 12);
 }
 
-div {
+.comment {
+  font-style: italic;
   border: 1px dashed rgb(121, 254, 12);
   width: 50%;
-  background-color: rgb(255, 255, 197);
   margin-top: 5px;
 }

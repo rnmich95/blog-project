@@ -19,6 +19,7 @@ logging.basicConfig(
 )
 
 app = Flask(__name__)
+app.secret_key = b'1234**'
 
 def init_db(db_file):
     current_dir = os.path.dirname(os.path.abspath(__file__))
