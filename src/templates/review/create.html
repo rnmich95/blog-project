@@ -1,0 +1,26 @@
+{% extends 'base.html' %} {% block header %}
+<h1>{% block title %}Write a review{% endblock %}</h1>
+{% endblock %} {% block content %}
+<form
+  id="addReview"
+  action="{{ url_for('view.process_review_form_fields') }}"
+  method="post"
+>
+  <input
+    type="text"
+    name="guest"
+    id="guest"
+    placeholder="you are .."
+    required
+  />
+  <input
+    type="text"
+    name="content"
+    id="content"
+    placeholder="tell me what you think .."
+    required
+  />
+  <input type="hidden" name="book_id" id="book_id" value="{{ b_id }}" />
+  <button type="submit">Submit</button>
+</form>
+{% endblock %}
