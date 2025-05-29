@@ -1,7 +1,6 @@
 import logging
 import traceback
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
-import requests
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request
 
 from model import Book, Review
 

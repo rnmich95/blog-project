@@ -48,10 +48,10 @@ ul.custom-bullets li::marker {
   color: rgb(121, 254, 12);
 }
 
-table {
+/* table {
   border: 1px solid rgb(121, 254, 12);
   border-collapse: collapse;
-}
+} */
 
 td {
   padding: 10px;
